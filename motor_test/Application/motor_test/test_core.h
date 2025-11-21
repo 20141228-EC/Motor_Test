@@ -11,12 +11,14 @@ extern MotorTestConfig_t Test_Config;
 
 
 extern Motor_DM_t TEST_DM_Motor;
+extern DM_test_flag_t DM_flag;
 void DM_Motor_Init(Motor_base_info_t*info);
 void DM_Motor_work(void);
 void DM_Motor_send(void);
 
 
 extern KT_motor_t TEST_KT_motor;
+extern KT_test_flag_t KT_flag;
 void KT_Motor_Init(Motor_base_info_t*info);
 void KT_Motor_work(void);
 void KT_Motor_send(void);

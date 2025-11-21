@@ -120,7 +120,6 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>DLGUARM</Key>
-          <Name>?</Name>
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
@@ -159,14 +158,14 @@
           <Type>0</Type>
           <LineNumber>105</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134238224</Address>
+          <Address>134238336</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>../Core/Src/stm32f4xx_it.c</Filename>
+          <Filename>E:\rp\GitHub\pidz-test\motor_test\Core\Src\stm32f4xx_it.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression>\\My_C\../Core/Src/stm32f4xx_it.c\105</Expression>
         </Bp>
@@ -175,14 +174,14 @@
           <Type>0</Type>
           <LineNumber>208</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134221918</Address>
+          <Address>134221962</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>..\Application\DriverLayer\drv_can.c</Filename>
+          <Filename>E:\rp\GitHub\pidz-test\motor_test\Application\DriverLayer\drv_can.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression>\\My_C\../Application/DriverLayer/drv_can.c\208</Expression>
         </Bp>
@@ -191,14 +190,14 @@
           <Type>0</Type>
           <LineNumber>218</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134221946</Address>
+          <Address>134221990</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>..\Application\DriverLayer\drv_can.c</Filename>
+          <Filename>E:\rp\GitHub\pidz-test\motor_test\Application\DriverLayer\drv_can.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression>\\My_C\../Application/DriverLayer/drv_can.c\218</Expression>
         </Bp>
@@ -223,6 +222,61 @@
           <count>3</count>
           <WinNumber>1</WinNumber>
           <ItemText>rm3508,0x0A</ItemText>
+        </Ww>
+        <Ww>
+          <count>4</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>KT_flag</ItemText>
+        </Ww>
+        <Ww>
+          <count>5</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>DM_Info</ItemText>
+        </Ww>
+        <Ww>
+          <count>6</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>TEST_DM_Motor</ItemText>
+        </Ww>
+        <Ww>
+          <count>7</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>\\My_C\../Application/motor_test/test_core.c\TEST_DM_Motor.tx_info</ItemText>
+        </Ww>
+        <Ww>
+          <count>8</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>DM_Speed_Pid</ItemText>
+        </Ww>
+        <Ww>
+          <count>9</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>KT_Angle_Pid</ItemText>
+        </Ww>
+        <Ww>
+          <count>10</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>HT_Speed_Pid</ItemText>
+        </Ww>
+        <Ww>
+          <count>11</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>HT_Angle_Pid</ItemText>
+        </Ww>
+        <Ww>
+          <count>12</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>DM_Angle_Pid</ItemText>
+        </Ww>
+        <Ww>
+          <count>13</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>base_info</ItemText>
+        </Ww>
+        <Ww>
+          <count>14</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>TEST_KT_motor,0x10</ItemText>
         </Ww>
       </WatchWindow1>
       <WatchWindow2>

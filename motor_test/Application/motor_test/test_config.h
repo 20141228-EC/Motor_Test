@@ -44,6 +44,8 @@ typedef struct {
 	float angle_range;  //用于半圈处理，就近归位
 	uint32_t start_tick;
 	bool test_target_set ; //海泰电机速度设置标志位
+	float direction;
+	float change_angle;
 } MotorTestConfig_t;
 
 
@@ -56,7 +58,7 @@ typedef struct Motor_struct_t{
     
     uint32_t motor_Id;
 	
-	  uint8_t rxId;  //rm电机序号
+	 uint8_t rxId;  //rm电机序号
 
 }Motor_base_info_t;
 
@@ -76,6 +78,13 @@ typedef struct {
 	bool ID_UNKNOW;//是否需要搜寻ID;
 	uint32_t Id;
 }KT_test_flag_t;
+
+typedef struct {
+	bool DM_ID_Get;
+	bool ID_UNKNOW;
+	uint32_t Rx_Id;
+	uint32_t Tx_Id;
+}DM_test_flag_t;
 
 typedef enum {
     MOTOR_OP_INIT,   // 初始化操作
