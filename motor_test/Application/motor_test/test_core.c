@@ -9,7 +9,8 @@ MotorTestConfig_t Test_Config={
 
 static void single_pid(MotorTestConfig_t *Test_Config);
 static void double_pid(MotorTestConfig_t *Test_Config);
-static void KT_Id_test(void);
+static void KT_Id_test(Motor_base_info_t *base_info);
+static void DM_Id_test(Motor_base_info_t *base_info);
 /*------------------------------------------------------------*/
 /*                           DM                               */
 /*------------------------------------------------------------*/
@@ -71,6 +72,7 @@ void DM_Motor_Init(Motor_base_info_t*info){
 		born_info->hcan=&hcan2;
 	}
 	born_info->stdId=(uint8_t)info->motor_Id;
+	DM_Id_test(info);
 	Test_Config.pid=&DM_pid;
 	TEST_DM_Motor.single_init(&TEST_DM_Motor);
 	
@@ -83,6 +85,14 @@ void DM_Motor_work(){
 	motor_pid_t *speed_pid=Test_Config.pid->single_pid;
 	motor_pid_t *angle_pid=Test_Config.pid->double_pid;
 	Motor_DM_Rx_Info_t *info=TEST_DM_Motor.rx_info;
+	
+	if(DM_flag.DM_ID_Get==false){
+		TEST_DM_Motor.born_info->stdId++;
+		DM_flag.Tx_Id=TEST_DM_Motor.born_info->stdId;
+		if(TEST_DM_Motor.born_info->stdId>=0xFF){
+			TEST_DM_Motor.born_info->stdId=0x00;
+		}
+	}
 	
 	switch(Test_Config.mode){
 		case PID_speed_mode:{
@@ -113,7 +123,13 @@ void DM_Motor_send(){
 	TEST_DM_Motor.single_set_torque(&TEST_DM_Motor);
 }
 
-
+void DM_test_id(uint32_t rxId,uint8_t *rxBuf){
+	if(DM_flag.ID_UNKNOW==true){
+		DM_flag.Rx_Id=rxId;
+		DM_flag.DM_ID_Get=true;
+		TEST_DM_Motor.rx(&TEST_DM_Motor,rxBuf);
+	}
+ }
 
 /*------------------------------------------------------------*/
 /*                           KT                               */
@@ -160,7 +176,7 @@ void KT_Motor_Init(Motor_base_info_t*info){
 	KT_motor_id_info_t *KT_info=&TEST_KT_motor.KT_motor_info.id;
 	
 	KT_info->tx_id=info->motor_Id;
-	KT_Id_test();
+	KT_Id_test(info);
 	KT_info->drive_type=info->drive_type;
 	Test_Config.pid=&KT_pid;
 	TEST_KT_motor.tx_W_cmd(&TEST_KT_motor,MOTOR_RUN_ID);
@@ -175,7 +191,7 @@ void KT_Motor_work(){
 	
 	if(KT_flag.KT_ID_Get==false){
 		TEST_KT_motor.KT_motor_info.id.tx_id++;
-		if(TEST_KT_motor.KT_motor_info.id.tx_id==0x160){
+		if(TEST_KT_motor.KT_motor_info.id.tx_id>=0x160){
 			TEST_KT_motor.KT_motor_info.id.tx_id=0x140;
 		}
 	}
@@ -589,10 +605,17 @@ static void double_pid(MotorTestConfig_t *Test_Config){
 	
 }
 
-static void KT_Id_test(){//放在init，判断开始需不需要试id
-	KT_motor_id_info_t *KT_info=&TEST_KT_motor.KT_motor_info.id;
-	if(KT_flag.ID_UNKNOW==true){
+static void KT_Id_test(Motor_base_info_t *base_info){//放在init，判断开始需不需要试id
+	if(base_info->KT_ID_Unkonw){
 		KT_flag.KT_ID_Get=false;
+		KT_flag.ID_UNKNOW=true;
+	}
+}
 
+
+static void DM_Id_test(Motor_base_info_t *base_info){//放在init，判断开始需不需要试id
+	if(base_info->DM_ID_Unknow){
+		DM_flag.DM_ID_Get=false;
+		DM_flag.ID_UNKNOW=true;
 	}
 }

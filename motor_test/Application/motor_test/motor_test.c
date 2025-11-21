@@ -15,17 +15,19 @@
 static void Motor_Operate(Motor_base_info_t *info, MotorOpType_e op);
 
 Motor_base_info_t base_info={
-	.motor_type=KT_MOTOR,
+	.motor_type=DM_MOTOR,
 	
 	.drive_type=M_CAN1,
 		
 	.motor_Id=0x200,//发送Id
 	
 	.rxId=0 ,  //rm电机序号，其他电机无需更改
+	
+	.KT_ID_Unkonw=false ,
+		
+	.DM_ID_Unknow=true ,
 };
 
-bool KT_ID_Unkonw=true;
-bool DM_ID_Unknow=false;
 #define Speed		//Angle  Speed(测试模式）
 /*--------------------手动更改内容end----------------------*/
 
@@ -34,12 +36,6 @@ bool DM_ID_Unknow=false;
 void Pid_Motor_Init(){
 	Motor_Operate(&base_info, MOTOR_OP_INIT);
 	Test_Config.start_tick = HAL_GetTick();
-	if(KT_ID_Unkonw){
-		KT_flag.ID_UNKNOW=true;
-	}
-	if(DM_ID_Unknow){
-		DM_flag.ID_UNKNOW=true;
-	}
 }
 
 

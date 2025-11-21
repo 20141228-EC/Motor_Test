@@ -59,6 +59,10 @@ typedef struct Motor_struct_t{
     uint32_t motor_Id;
 	
 	 uint8_t rxId;  //rmµç»úÐòºÅ
+	
+	bool KT_ID_Unkonw;
+	
+	bool DM_ID_Unknow;
 
 }Motor_base_info_t;
 

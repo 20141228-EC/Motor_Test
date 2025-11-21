@@ -7,6 +7,7 @@ void CAN1_rxDataHandler(uint32_t rxId, uint8_t *rxBuf)
 {
 	
 	KT_test_id(rxId,rxBuf);
+	DM_test_id(rxId,rxBuf);
 	switch (rxId)
 	{
 //		case 0x0b:

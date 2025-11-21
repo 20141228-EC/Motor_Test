@@ -15,6 +15,7 @@ extern DM_test_flag_t DM_flag;
 void DM_Motor_Init(Motor_base_info_t*info);
 void DM_Motor_work(void);
 void DM_Motor_send(void);
+void DM_test_id(uint32_t rxId,uint8_t *rxBuf);
 
 
 extern KT_motor_t TEST_KT_motor;

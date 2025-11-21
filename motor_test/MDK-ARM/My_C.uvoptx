@@ -158,7 +158,7 @@
           <Type>0</Type>
           <LineNumber>105</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134238336</Address>
+          <Address>134238392</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -277,6 +277,16 @@
           <count>14</count>
           <WinNumber>1</WinNumber>
           <ItemText>TEST_KT_motor,0x10</ItemText>
+        </Ww>
+        <Ww>
+          <count>15</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>KT_Speed_Pid</ItemText>
+        </Ww>
+        <Ww>
+          <count>16</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>TEST_DM_Motor</ItemText>
         </Ww>
       </WatchWindow1>
       <WatchWindow2>
