@@ -4,16 +4,25 @@ MotorTestConfig_t Test_Config={
 	.mode=PID_sleep_mode,
 	.start_tick=0,
 	.test_target_set=true,  //海泰电机速度设置标志位
+	.change_angle=0,
 };//传入模式等参数
 
 static void single_pid(MotorTestConfig_t *Test_Config);
 static void double_pid(MotorTestConfig_t *Test_Config);
-static void KT_Id_test(void);
+static void KT_Id_test(Motor_base_info_t *base_info);
+static void DM_Id_test(Motor_base_info_t *base_info);
 /*------------------------------------------------------------*/
 /*                           DM                               */
 /*------------------------------------------------------------*/
 
 static DM_Info_t DM_Info={0};
+
+DM_test_flag_t DM_flag={
+	.DM_ID_Get=true,//是否已找到id；
+	.ID_UNKNOW=false,//是否需要搜寻ID;
+	.Rx_Id=0x00,
+	.Tx_Id=0x00,
+};
 
 Motor_DM_t TEST_DM_Motor={
 	.born_info=&DM_Info.born_info,
@@ -24,12 +33,12 @@ Motor_DM_t TEST_DM_Motor={
 };
 
 motor_pid_t DM_Angle_Pid={
-	.speed.kp = 0.8,
+	.speed.kp = 0.2,
 	.speed.ki = 0,
 	.speed.kd = 0,
 	.speed.integral_max = 3000,
 	.speed.out_max = 28000,
-	.angle.kp = 24,
+	.angle.kp = 20,
 	.angle.ki = 0,
 	.angle.kd = 0,
 	.angle.integral_max = 0,
@@ -63,6 +72,7 @@ void DM_Motor_Init(Motor_base_info_t*info){
 		born_info->hcan=&hcan2;
 	}
 	born_info->stdId=(uint8_t)info->motor_Id;
+	DM_Id_test(info);
 	Test_Config.pid=&DM_pid;
 	TEST_DM_Motor.single_init(&TEST_DM_Motor);
 	
@@ -76,14 +86,24 @@ void DM_Motor_work(){
 	motor_pid_t *angle_pid=Test_Config.pid->double_pid;
 	Motor_DM_Rx_Info_t *info=TEST_DM_Motor.rx_info;
 	
+	if(DM_flag.DM_ID_Get==false){
+		TEST_DM_Motor.born_info->stdId++;
+		DM_flag.Tx_Id=TEST_DM_Motor.born_info->stdId;
+		if(TEST_DM_Motor.born_info->stdId>=0xFF){
+			TEST_DM_Motor.born_info->stdId=0x00;
+		}
+	}
+	
 	switch(Test_Config.mode){
 		case PID_speed_mode:{
+			DM_Speed_Pid.speed.target=5*Test_Config.direction;
 			speed_pid->speed.measure=info->speed;
 			single_pid(&Test_Config);
 			TEST_DM_Motor.tx_info->torque=speed_pid->speed.out;
 			break;
 		}
 		case PID_angle_mode:{
+			angle_pid->angle.target=-PI+(Test_Config .angle_range*Test_Config.change_angle/4);
 			angle_pid->angle.measure=info->motor_angle;
 			angle_pid->speed.measure=info->speed;
 			double_pid(&Test_Config);
@@ -103,7 +123,13 @@ void DM_Motor_send(){
 	TEST_DM_Motor.single_set_torque(&TEST_DM_Motor);
 }
 
-
+void DM_test_id(uint32_t rxId,uint8_t *rxBuf){
+	if(DM_flag.ID_UNKNOW==true){
+		DM_flag.Rx_Id=rxId;
+		DM_flag.DM_ID_Get=true;
+		TEST_DM_Motor.rx(&TEST_DM_Motor,rxBuf);
+	}
+ }
 
 /*------------------------------------------------------------*/
 /*                           KT                               */
@@ -150,7 +176,7 @@ void KT_Motor_Init(Motor_base_info_t*info){
 	KT_motor_id_info_t *KT_info=&TEST_KT_motor.KT_motor_info.id;
 	
 	KT_info->tx_id=info->motor_Id;
-	KT_Id_test();
+	KT_Id_test(info);
 	KT_info->drive_type=info->drive_type;
 	Test_Config.pid=&KT_pid;
 	TEST_KT_motor.tx_W_cmd(&TEST_KT_motor,MOTOR_RUN_ID);
@@ -165,12 +191,13 @@ void KT_Motor_work(){
 	
 	if(KT_flag.KT_ID_Get==false){
 		TEST_KT_motor.KT_motor_info.id.tx_id++;
-		if(TEST_KT_motor.KT_motor_info.id.tx_id==0x138){
+		if(TEST_KT_motor.KT_motor_info.id.tx_id>=0x160){
 			TEST_KT_motor.KT_motor_info.id.tx_id=0x140;
 		}
 	}
 			switch(Test_Config.mode){
 		case PID_speed_mode:{
+			speed_pid->speed.target=500*Test_Config.direction;
 			speed_pid->speed.measure=info->speed;
 			single_pid(&Test_Config);
 			static int16_t iqContro;
@@ -179,6 +206,7 @@ void KT_Motor_work(){
 			break;
 		}
 		case PID_angle_mode:{
+			angle_pid->angle.target=Test_Config .angle_range*Test_Config.change_angle/4;
 			angle_pid->angle.measure=info->encoder;
 			angle_pid->speed.measure=info->speed;
 			double_pid(&Test_Config);
@@ -394,7 +422,7 @@ void m_RM_Motor_Init(Motor_base_info_t*info){
 			gm6020.single_init(&gm6020);
 			born_info->rxId=info->rxId;
    }
-	 	Test_Config.angle_range=2*PI;//电机位置默认最大范围
+	 	Test_Config.angle_range=8191;//电机位置默认最大范围
 }
 
 
@@ -402,6 +430,8 @@ void m_RM_Motor_Init(Motor_base_info_t*info){
 void RM_Motor_work(Motor_base_info_t*info){
 	switch(Test_Config.mode){
 		case PID_speed_mode:{
+			Speed_Ctrl6020.target=500*Test_Config.direction;
+			Speed_Ctrl.target=300*Test_Config.direction;
 				if(info->motor_type==RM3508)
 	         {rm3508.single_set_speed(&rm3508);}
 				  else if(info->motor_type==GM6020)
@@ -410,9 +440,11 @@ void RM_Motor_work(Motor_base_info_t*info){
 		}
 		case PID_angle_mode:{
 				if(info->motor_type==RM3508)
-       	{rm3508.single_set_angle(&rm3508);}
+       	{Angle_Ctrl_out_3508.target=Test_Config .angle_range*Test_Config.change_angle/4;
+		rm3508.single_set_angle(&rm3508);}
         else if(info->motor_type==GM6020)
-       	{gm6020.single_set_angle(&gm6020);
+       	{	Angle_Ctrl_out_6020.target=Test_Config .angle_range*Test_Config.change_angle/4;	
+			gm6020.single_set_angle(&gm6020);
 				 gm6020.tx_info->torque=gm6020.ctrl->angle_ctrl_inner->out ;
 				}
 				break;
@@ -462,12 +494,12 @@ Motor_HT_t ht =
 	.single_init = &HT_Single_Motor_Init,
 };
 motor_pid_t HT_Angle_Pid={
-	.speed.kp = 0.8,
+	.speed.kp = 0.5,
 	.speed.ki = 0.0005,
 	.speed.kd = 0,
 	.speed.integral_max = 300,
 	.speed.out_max = 2800,
-	.angle.kp = 0.55,
+	.angle.kp = 2.5,
 	.angle.ki = 0.0004,
 	.angle.kd = 0,
 	.angle.integral_max = 0,
@@ -504,7 +536,7 @@ void HT_Motor_Init(Motor_base_info_t*info){
 	born_info->order_correction=1;
 	Test_Config.pid=&HT_pid;
 	ht.single_init(&ht);
-	Test_Config.angle_range=95.5f;//电机位置默认最大范围
+	Test_Config.angle_range=191.0f;//电机位置默认最大范围
 }
 
 
@@ -516,6 +548,7 @@ void HT_Motor_work(){
 	
 	switch(Test_Config.mode){
 		case PID_speed_mode:{
+			speed_pid->speed.target=3*Test_Config.direction;
 			speed_pid->speed.measure=info->speed;
 			single_pid(&Test_Config);
 			ht.tx_info->torque=speed_pid->speed.out;
@@ -526,7 +559,7 @@ void HT_Motor_work(){
 			angle_pid->angle.measure=info->encoder;
 			if(Test_Config.test_target_set)
 			{
-			angle_pid->angle.target=(info->encoder)+4*PI;   //测试的时候在原有基础上转2圈
+			angle_pid->angle.target=(info->encoder)+PI/2;   //测试的时候在原有基础上转1/4圈
 			Test_Config.test_target_set=false;	
 			}
 			angle_pid->speed.measure=info->speed;
@@ -572,10 +605,17 @@ static void double_pid(MotorTestConfig_t *Test_Config){
 	
 }
 
-static void KT_Id_test(){//放在init，判断开始需不需要试id
-	KT_motor_id_info_t *KT_info=&TEST_KT_motor.KT_motor_info.id;
-	if(KT_info->tx_id==0x140){
+static void KT_Id_test(Motor_base_info_t *base_info){//放在init，判断开始需不需要试id
+	if(base_info->KT_ID_Unkonw){
 		KT_flag.KT_ID_Get=false;
 		KT_flag.ID_UNKNOW=true;
+	}
+}
+
+
+static void DM_Id_test(Motor_base_info_t *base_info){//放在init，判断开始需不需要试id
+	if(base_info->DM_ID_Unknow){
+		DM_flag.DM_ID_Get=false;
+		DM_flag.ID_UNKNOW=true;
 	}
 }
