@@ -15,7 +15,7 @@
 static void Motor_Operate(Motor_base_info_t *info, MotorOpType_e op);
 
 Motor_base_info_t base_info={
-	.motor_type=DM_MOTOR,
+	.motor_type=KT_MOTOR,
 	
 	.drive_type=M_CAN1,
 		
@@ -23,12 +23,15 @@ Motor_base_info_t base_info={
 	
 	.rxId=0 ,  //rm电机序号，其他电机无需更改
 	
-	.KT_ID_Unkonw=false ,
+	.KT_ID_Unkonw=true ,
 		
-	.DM_ID_Unknow=true ,
+	.KT_Board_Mode=true,
+	
+	.DM_ID_Unknow=false ,
+		
 };
 
-#define Speed		//Angle  Speed(测试模式）
+#define Angle		//Angle  Speed(测试模式）
 /*--------------------手动更改内容end----------------------*/
 
 

@@ -64,6 +64,7 @@ typedef struct Motor_struct_t{
 	
 	bool DM_ID_Unknow;
 
+	bool KT_Board_Mode;
 }Motor_base_info_t;
 
 
@@ -81,6 +82,8 @@ typedef struct {
 	bool KT_ID_Get;//是否已找到id；
 	bool ID_UNKNOW;//是否需要搜寻ID;
 	uint32_t Id;
+	bool board_mode;
+	int16_t iqControl[4];
 }KT_test_flag_t;
 
 typedef struct {

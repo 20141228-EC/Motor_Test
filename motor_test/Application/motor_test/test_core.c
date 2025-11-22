@@ -10,6 +10,7 @@ MotorTestConfig_t Test_Config={
 static void single_pid(MotorTestConfig_t *Test_Config);
 static void double_pid(MotorTestConfig_t *Test_Config);
 static void KT_Id_test(Motor_base_info_t *base_info);
+static void KT_Multi_Mode_Updata(uint8_t id,motor_pid_t*pid);
 static void DM_Id_test(Motor_base_info_t *base_info);
 /*------------------------------------------------------------*/
 /*                           DM                               */
@@ -163,7 +164,9 @@ motor_pid_t KT_Speed_Pid={
 KT_test_flag_t KT_flag={
 	.KT_ID_Get=true,//ÊÇ·ñÒÑÕÒµ½id£»
 	.ID_UNKNOW=false,//ÊÇ·ñĞèÒªËÑÑ°ID;
+	.board_mode=false,
 	.Id=0x140,
+	.iqControl={0},
 };
 
 pid_struct_t KT_pid={
@@ -185,6 +188,7 @@ void KT_Motor_Init(Motor_base_info_t*info){
 
 
 void KT_Motor_work(){
+	static uint8_t id;
 	motor_pid_t *speed_pid=Test_Config.pid->single_pid;
 	motor_pid_t *angle_pid=Test_Config.pid->double_pid;
 	KT_motor_rx_info_t *info=&TEST_KT_motor.KT_motor_info.rx_info;
@@ -195,6 +199,12 @@ void KT_Motor_work(){
 			TEST_KT_motor.KT_motor_info.id.tx_id=0x140;
 		}
 	}
+	//¶àµç»úÄ£Ê½ÊÕµ½idºó´¦ÀíidĞòºÅ
+	if(KT_flag.KT_ID_Get&&KT_flag.board_mode){
+		id=KT_flag.Id&0x0f-1;
+	}
+	
+	
 			switch(Test_Config.mode){
 		case PID_speed_mode:{
 			speed_pid->speed.target=500*Test_Config.direction;
@@ -203,6 +213,8 @@ void KT_Motor_work(){
 			static int16_t iqContro;
 			iqContro=(int16_t)speed_pid->speed.out;
 			TEST_KT_motor.W_iqControl(&TEST_KT_motor,iqContro);
+			
+			KT_Multi_Mode_Updata(id,speed_pid);//¶àµç»ú
 			break;
 		}
 		case PID_angle_mode:{
@@ -212,7 +224,9 @@ void KT_Motor_work(){
 			double_pid(&Test_Config);
 			static int16_t iqContro;
 			iqContro=(int16_t)angle_pid->speed.out;
-			TEST_KT_motor.W_iqControl(&TEST_KT_motor,iqContro);			
+			TEST_KT_motor.W_iqControl(&TEST_KT_motor,iqContro);	
+			
+			KT_Multi_Mode_Updata(id,angle_pid);//¶àµç»ú
 		}
 		default:
 			break;
@@ -221,22 +235,39 @@ void KT_Motor_work(){
 
 void KT_Motor_send(){
 		KT_motor_state_info_t *state=&TEST_KT_motor.KT_motor_info.state_info;//Êµ¼ÊÉÏ²¢Ã»ÓĞÓÃÉÏĞÄÌøº¯Êı
-
-		if(state->work_state==M_OFFLINE ||Test_Config.mode==PID_sleep_mode){
-			TEST_KT_motor.tx_W_cmd(&TEST_KT_motor,MOTOR_STOP_ID);
+	if(KT_flag.board_mode){
+		if(!KT_flag.KT_ID_Get ||Test_Config.mode==PID_sleep_mode){
+			static int16_t zero[4]={0};
+			kt_motor_multi_control(zero,4,TEST_KT_motor.KT_motor_info.id.drive_type);
+		}
+			else{
+			kt_motor_multi_control(KT_flag.iqControl,4,TEST_KT_motor.KT_motor_info.id.drive_type);
+		}
 	}
-		else{
-			TEST_KT_motor.tx_W_cmd(&TEST_KT_motor,TORQUE_CLOSE_LOOP_ID);
+	else{
+			if(state->work_state==M_OFFLINE ||Test_Config.mode==PID_sleep_mode){
+				TEST_KT_motor.tx_W_cmd(&TEST_KT_motor,MOTOR_STOP_ID);
+		}
+			else{
+				TEST_KT_motor.tx_W_cmd(&TEST_KT_motor,TORQUE_CLOSE_LOOP_ID);
+		}
 	}
 }
 
 void KT_test_id(uint32_t rxId,uint8_t *rxBuf){
 	if(KT_flag.ID_UNKNOW==true){
-	if(rxId==TEST_KT_motor.KT_motor_info.id.tx_id){
-		KT_flag.KT_ID_Get=true;
-		KT_flag.Id=rxId;
-		TEST_KT_motor.get_info(&TEST_KT_motor,rxBuf);
-	}
+		if(KT_flag.board_mode){
+			KT_flag.KT_ID_Get=true;
+			KT_flag.Id=rxId;
+			TEST_KT_motor.get_info(&TEST_KT_motor,rxBuf);
+		}
+		else{
+			if(rxId==TEST_KT_motor.KT_motor_info.id.tx_id){
+				KT_flag.KT_ID_Get=true;
+				KT_flag.Id=rxId;
+				TEST_KT_motor.get_info(&TEST_KT_motor,rxBuf);
+			}
+		}
  }
 }
 /*-----------------------------------------------------------------------*/
@@ -609,6 +640,9 @@ static void KT_Id_test(Motor_base_info_t *base_info){//·ÅÔÚinit£¬ÅĞ¶Ï¿ªÊ¼Ğè²»ĞèÒ
 	if(base_info->KT_ID_Unkonw){
 		KT_flag.KT_ID_Get=false;
 		KT_flag.ID_UNKNOW=true;
+		if(base_info->KT_Board_Mode){
+			KT_flag.board_mode=true;
+		}
 	}
 }
 
@@ -618,4 +652,8 @@ static void DM_Id_test(Motor_base_info_t *base_info){//·ÅÔÚinit£¬ÅĞ¶Ï¿ªÊ¼Ğè²»ĞèÒ
 		DM_flag.DM_ID_Get=false;
 		DM_flag.ID_UNKNOW=true;
 	}
+}
+
+static void KT_Multi_Mode_Updata(uint8_t id,motor_pid_t*pid){
+	KT_flag.iqControl[id]=(int16_t)(pid->speed.out);
 }
