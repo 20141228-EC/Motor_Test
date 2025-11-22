@@ -2125,6 +2125,11 @@
           <GroupName>MotorTest</GroupName>
           <Files>
             <File>
+              <FileName>test_config.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Application\motor_test\test_config.h</FilePath>
+            </File>
+            <File>
               <FileName>motor_test.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Application\motor_test\motor_test.c</FilePath>
@@ -2133,11 +2138,6 @@
               <FileName>motor_test.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\Application\motor_test\motor_test.h</FilePath>
-            </File>
-            <File>
-              <FileName>test_config.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\Application\motor_test\test_config.h</FilePath>
             </File>
             <File>
               <FileName>test_core.c</FileName>
